@@ -1,14 +1,14 @@
 {
-  "manifest_version": 3,
-  "name": "Bookmarks New Tab",
-  "version": "1.0",
-  "description": "Display bookmarks on new tab page",
-  "permissions": ["bookmarks"],
-  "chrome_url_overrides": {
-    "newtab": "index.html"
-  },
-  "icons": {
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  }
+	"manifest_version": 3,
+	"name": "Bookmarks New Tab",
+	"version": "1.0",
+	"description": "Display bookmarks on new tab page",
+	"permissions": ["bookmarks", "chrome://favicon/"],
+	"chrome_url_overrides": {
+		"newtab": "index.html"
+	},
+	"icons": {
+		"48": "icons/icon48.png",
+		"128": "icons/icon128.png"
+	}
 }

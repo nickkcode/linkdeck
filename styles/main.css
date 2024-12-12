@@ -3,7 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Rosé Pine Moon theme colors */
 :root {
 	--base: #232136;
 	--surface: #2a273f;
@@ -38,10 +37,7 @@ body {
 }
 
 .container {
-	height: 100vh;
-	display: grid;
-	grid-template-rows: auto 1fr;
-	overflow: hidden;
+    display: flex;
 }
 
 header {
@@ -75,6 +71,7 @@ h1 {
 	outline: none;
 	transition: all 0.2s;
 	text-align: center;
+    caret-color: transparent;
 }
 
 #search-input:focus {
@@ -92,6 +89,34 @@ h1 {
 	top: 50%;
 	transform: translateY(-50%);
 	color: var(--muted);
+}
+
+.web-icons {
+    border-radius: 10px;
+    margin: 10px;
+}
+
+.web-icons:hover {
+    scale: 110%;
+    transition: 300ms ease-in-out;
+}
+
+.label {
+    color: var(--iris);
+    text-align: center;
+}
+
+.icon-container {
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+    width: fit-content;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 main {
@@ -190,12 +215,4 @@ main {
 	align-items: center;
 	gap: 0.5rem;
 	margin: 0.25rem 0;
-}
-
-kbd {
-	background: var(--overlay);
-	padding: 0.25rem 0.5rem;
-	border-radius: 4px;
-	color: var(--foam);
-	font-size: 0.75rem;
 }

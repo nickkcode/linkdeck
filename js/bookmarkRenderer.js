@@ -2,90 +2,70 @@ import { ChromeService } from './chromeService.js';
 
 export async function renderBookmarks(container, searchTerm = '') {
 	try {
+        // Set container to flex display
+        container.style.display = 'flex';
+        container.style.flexWrap = 'wrap';
+        container.style.gap = '10px';
+        container.style.justifyContent = 'start';
+
 		const bookmarks = await ChromeService.getBookmarks();
 		container.innerHTML = '';
 
 		function createBookmarkElement(bookmark) {
-			const element = document.createElement('div');
-			element.className = 'bookmark-item flex flex-col items-center justify-center w-24 h-24 bg-gray-200 rounded-lg shadow-md hover:scale-105 hover:shadow-lg transition-all';
+			// Only render links with URLs
+			if (!bookmark.url) return null;
 
-			if (bookmark.url) {
-				const faviconUrl = `chrome://favicon/${bookmark.url}`;
-				element.innerHTML = `
-                    <a href="${bookmark.url}" class="bookmark-link flex flex-col items-center text-center text-sm text-gray-800">
-                        <img src="${faviconUrl}" alt="Favicon" class="w-10 h-10 mb-2" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22><rect width=%2224%22 height=%2224%22 fill=%22%23999999%22/></svg>'">
-                        <span class="truncate w-full">${bookmark.title || bookmark.url}</span>
-                    </a>
-                `;
-			} else {
-				element.innerHTML = `
-                    <div class="folder flex flex-col items-center text-center">
-                        <div class="folder-title font-bold text-gray-600">📁 ${bookmark.title}</div>
-                        <div class="bookmark-grid mt-2 grid grid-cols-3 gap-2"></div>
-                    </div>
-                `;
-			}
+			const domain = new URL(bookmark.url).origin;
+			const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain_url=${domain}`;
+			
+			const element = document.createElement('a');
+			element.href = bookmark.url;
+			element.classList.add('bookmark-item');
+			element.style.display = 'flex';
+			element.style.flexDirection = 'column';
+			element.style.alignItems = 'center';
+            element.style.justifyContent = "center"
+			element.style.textDecoration = 'none';
+			element.style.width = '80px';
+			element.style.height = '80px';
+			element.style.textAlign = 'center';
+
+			element.innerHTML = `
+				<img src="${faviconUrl}" alt="Favicon" width="40px" height="40px" style="margin-bottom: 5px;">
+				<span style="font-size: 12px; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">
+					${bookmark.title || new URL(bookmark.url).hostname}
+				</span>
+			`;
+
 			return element;
 		}
 
 		function renderBookmarkTree(bookmarkNodes, parentElement) {
-			const folders = [];
-			const links = [];
-
 			bookmarkNodes.forEach((node) => {
+				// Filter bookmarks based on search term
 				const shouldShow =
 					!searchTerm ||
-					node.title
-						?.toLowerCase()
-						.includes(searchTerm.toLowerCase()) ||
+					node.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
 					node.url?.toLowerCase().includes(searchTerm.toLowerCase());
 
-				if (!shouldShow && !node.children) {
-					return;
-				}
-
 				if (node.children) {
-					folders.push(node);
-				} else {
-					links.push(node);
+					// Recursively render child bookmarks
+					renderBookmarkTree(node.children, parentElement);
+				} else if (shouldShow) {
+					const bookmarkElement = createBookmarkElement(node);
+					if (bookmarkElement) {
+						parentElement.appendChild(bookmarkElement);
+					}
 				}
-			});
-
-			// Render folders first
-			folders.forEach((folder) => {
-				const folderElement = createBookmarkElement(folder);
-				const gridContainer =
-					folderElement.querySelector('.bookmark-grid');
-				renderBookmarkTree(folder.children, gridContainer);
-
-				if (!searchTerm || gridContainer.children.length > 0) {
-					parentElement.appendChild(folderElement);
-				}
-			});
-
-			// Then render links
-			links.forEach((link) => {
-				const linkElement = createBookmarkElement(link);
-				parentElement.appendChild(linkElement);
 			});
 		}
 
 		renderBookmarkTree(bookmarks, container);
-
-		// Set the grid layout for the container
-		container.className = 'grid gap-4 p-4 h-full grid-cols-[repeat(auto-fit,minmax(6rem,1fr))]';
 	} catch (error) {
 		container.innerHTML = `
-            <div class="error-message text-red-600 p-4">
-                <p>⚠️ ${error.message}</p>
-                <p>Please ensure you have:</p>
-                <ul>
-                    <li>Loaded this as a Chrome extension</li>
-                    <li>Granted necessary permissions</li>
-                    <li>Reloaded the extension if recently installed</li>
-                </ul>
+            <div>
+                <p>${error.message}</p>
             </div>
         `;
-		console.error('Error rendering bookmarks:', error);
 	}
 }
