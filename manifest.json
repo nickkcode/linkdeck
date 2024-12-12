@@ -3,7 +3,7 @@
 	"name": "Bookmarks New Tab",
 	"version": "1.0",
 	"description": "Display bookmarks on new tab page",
-	"permissions": ["bookmarks", "chrome://favicon/"],
+	"permissions": ["bookmarks"],
 	"chrome_url_overrides": {
 		"newtab": "index.html"
 	},

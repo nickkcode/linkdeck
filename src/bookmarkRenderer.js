@@ -2,29 +2,45 @@ import { ChromeService } from './chromeService.js';
 
 export async function renderBookmarks(container, searchTerm = '') {
 	try {
-        // Set container to flex display
-        container.style.display = 'flex';
-        container.style.flexWrap = 'wrap';
-        container.style.gap = '10px';
-        container.style.justifyContent = 'start';
+		container.style.display = 'flex';
+		container.style.flexWrap = 'wrap';
+		container.style.gap = '10px';
+		container.style.justifyContent = 'left';
 
 		const bookmarks = await ChromeService.getBookmarks();
 		container.innerHTML = '';
 
+		function getCachedFavicon(domain) {
+			const faviconCache =
+				JSON.parse(localStorage.getItem('faviconCache')) || {};
+			return faviconCache[domain];
+		}
+
+		function setCachedFavicon(domain, faviconUrl) {
+			const faviconCache =
+				JSON.parse(localStorage.getItem('faviconCache')) || {};
+			faviconCache[domain] = faviconUrl;
+			localStorage.setItem('faviconCache', JSON.stringify(faviconCache));
+		}
+
 		function createBookmarkElement(bookmark) {
-			// Only render links with URLs
 			if (!bookmark.url) return null;
 
 			const domain = new URL(bookmark.url).origin;
-			const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain_url=${domain}`;
-			
+			let faviconUrl = getCachedFavicon(domain);
+
+			if (!faviconUrl) {
+				faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain_url=${domain}`;
+				setCachedFavicon(domain, faviconUrl);
+			}
+
 			const element = document.createElement('a');
 			element.href = bookmark.url;
 			element.classList.add('bookmark-item');
 			element.style.display = 'flex';
 			element.style.flexDirection = 'column';
 			element.style.alignItems = 'center';
-            element.style.justifyContent = "center"
+			element.style.justifyContent = 'center';
 			element.style.textDecoration = 'none';
 			element.style.width = '80px';
 			element.style.height = '80px';
@@ -45,7 +61,9 @@ export async function renderBookmarks(container, searchTerm = '') {
 				// Filter bookmarks based on search term
 				const shouldShow =
 					!searchTerm ||
-					node.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					node.title
+						?.toLowerCase()
+						.includes(searchTerm.toLowerCase()) ||
 					node.url?.toLowerCase().includes(searchTerm.toLowerCase());
 
 				if (node.children) {
